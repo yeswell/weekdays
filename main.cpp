@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <string>
 
 
 
@@ -63,10 +64,9 @@ int get_weekday(int year, int month, int day)
     int century = year / 100;
 
     year %= 100;
-    year += 1;
 
-    int index = (year + (4 * century)) % 28;
-    int weekday = weekdays[index - 1];
+    int index   = (year + (4 * century)) % 28;
+    int weekday = weekdays[index];
 
     weekday += is_leap ? shift_leap[month - 1]
                        : shift_not_leap[month - 1];
@@ -76,11 +76,112 @@ int get_weekday(int year, int month, int day)
     return weekday;
 }
 
+int get_weekday_x(int year, int month, int day)
+{
+    int weekdays[] =
+    {
+        0, 1, 2, 3,    5, 6,
+        0, 1,    3, 4, 5, 6,
+           1, 2, 3, 4,    6,
+        0, 1, 2,    4, 5, 6,
+        0,    2, 3, 4, 5
+    };
+
+    int shifts[] = {0, 3, 3, 6, 1, 4, 6, 2, 5, 0, 3, 5};
+
+    bool is_leap = is_leap_year(year);
+
+    year -= 1;
+    year %= 400;
+
+    int century = year / 100;
+
+    year %= 100;
+
+    int index = (year + (4 * century)) % 28;
+    int weekday = weekdays[index];
+
+    int shift = shifts[month - 1];
+    if (is_leap and (month > 2))
+    {
+        shift += 1;
+        shift %= 7;
+    };
+
+    weekday += shift + (day - 1);
+    weekday %= 7;
+
+    return weekday;
+}
+
+int get_weekday_c(int year, int month, int day)
+{
+    int shifts[] = {0, 3, 3, 6, 1, 4, 6, 2, 5, 0, 3, 5};
+
+    int shift = shifts[month - 1];
+
+    if (is_leap_year(year) and (month > 2))
+    {
+        shift += 1;
+    };
+
+    year = (year - 1) % 400;
+
+    int century = year / 100;
+
+    int index   = ((4 * century) + (year % 100)) % 28;
+
+    int weekday = (index + (index / 4)) + shift + (day - 1);
+
+    return (weekday % 7);
+}
+
+void print_weekday_name(int weekday)
+{
+    string names[] =
+    {
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday"
+    };
+
+    cout << names[weekday] << endl;
+}
+
+void eternal_question()
+{
+    int year, month, day;
+
+    cout << "Input year, month and day:" << endl;
+
+    while (true)
+    {
+        cout << endl;
+        cin >> year >> month >> day;
+
+        if ((year > 0) and (month > 0) and (month <= 12) and (day > 0))
+        {
+            cout << day << "." << month << "." << year << ", ";
+            print_weekday_name(get_weekday_c(year, month, day));
+        }
+        else
+        {
+            break;
+        }
+    }
+}
+
 int main()
 { 
     // first_weekdays_table();
 
-    cout << get_weekday(2019, 7, 1) << endl;
+    // cout << get_weekday(1, 1, 1) << endl;
+
+    eternal_question();
 
     return 0;
 }
